@@ -1,0 +1,48 @@
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: jenkins
+  labels:
+    app: jenkins
+spec:
+  containers:
+    - name: jenkins
+      securityContext:
+        privileged: true
+      image: falci/jenkins-k8s:latest
+      ports:
+        - containerPort: 8080
+      volumeMounts:
+        - name: k8s
+          mountPath: /var/lib/k8s/admin.conf
+        - name: docker
+          mountPath: /etc/systemd/system/docker.service.d/init.conf
+        - name: jenkins
+          mountPath: /var/lib/jenkins
+  volumes:
+    - name: k8s
+      hostPath:
+        path: /home/mtuser/admin.conf
+    - name: docker
+      hostPath:
+        path: /etc/systemd/system/docker.service.d/init.conf
+    - name: jenkins
+      hostPath:
+        path: /home/mtuser/data/jenkins
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jenkins
+  namespace: default
+spec:
+  selector:
+    app: jenkins
+  type: NodePort
+  ports:
+  - name: gogs
+    port: 8080
+    protocol: TCP
+    nodePort: 30001
+
