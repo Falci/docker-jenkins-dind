@@ -1,6 +1,6 @@
-FROM ubuntu:14.04
+FROM ubuntu:xenial
 
-MAINTAINER Decheng Zhang <killercentury@gmail.com>
+MAINTAINER Fernando Falci <jenkins.docker@falci.me>
 
 # Let's start with some basic stuff.
 RUN apt-get update -qq && apt-get install -qqy \
@@ -36,8 +36,14 @@ VOLUME /var/lib/jenkins
 RUN curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
 RUN chmod +x /usr/local/bin/docker-compose
 
+# Install k8s
+RUN curl -sS https://get.k8s.io | bash
+ENV KUBECONFIG=/var/lib/k8s/admin.conf
+RUN ln -s /kubernetes/client/bin/kubectl /usr/bin/kubectl
+
 ADD supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 EXPOSE 8080
 
 CMD ["/usr/bin/supervisord"]
+
